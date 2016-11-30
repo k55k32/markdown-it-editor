@@ -1,7 +1,7 @@
 <template lang="jade">
-.markdown(:class="{fullscreen:fullScreen}")
-  .markdown-wrapper
-    .markdown-tool
+.markdown__editor(:class="{fullscreen:fullScreen}")
+  .markdown__editor-wrapper
+    .markdown__editor-tool
       .action-group
         i.iconfont.icon-bold(@click="doCode('**')" hotkey="ctrl+b")
         i.iconfont.icon-italic(@click="doCode('*')" hotkey="ctrl+i")
@@ -19,14 +19,14 @@
       .action-group
         i.iconfont.icon-compress(@click="toggleFullScreen" v-if="fullScreen")
         i.iconfont.icon-expand(@click="toggleFullScreen" v-else)
-    .markdown-content
+    .markdown__editor-content
       .content-wrapper(@mousedown="beginDrag")
-        textarea.markdown-editor(ref="editor" v-model="content" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" @keydown="keydown")
+        textarea.markdown__editor-editor(ref="editor" v-model="content" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" @keydown="keydown")
         .preview-tool(ref="preTool")
           .allow-wrapper(@click.stop="showPreview = !showPreview")
             .allow(:class="{'allow-right':showPreview, 'allow-left':!showPreview}")
-        .markdown-preview(ref="preview" v-html="preview" v-show="showPreview", :style="{width: previewWidth + '%'}")
-    .markdown-status(:class="statusMessage.type", v-show="statusMessage.show") {{statusMessage.message}}
+        .markdown__editor-preview(ref="preview" v-html="preview" v-show="showPreview", :style="{width: previewWidth + '%'}")
+    .markdown__editor-status(:class="statusMessage.type", v-show="statusMessage.show") {{statusMessage.message}}
 
 </template>
 
@@ -69,7 +69,7 @@ export default {
   },
   computed: {
     preview () {
-      return this.markdown.render(this.content)
+      return this.markdown__editor.render(this.content)
     },
     canUndo () {
       return this.currentIndex > 0
@@ -88,7 +88,7 @@ export default {
       defaultLang: 'javascript',
       ...this.options
     }
-    this.markdown = markdownIt(options)
+    this.markdown__editor = markdownIt(options)
     if (options.highlight === true) {
       require.ensure('highlightjs', (require) => {
         const hljs = require('highlightjs')
@@ -101,7 +101,7 @@ export default {
           }
           return ''
         }
-        this.markdown = markdownIt(options)
+        this.markdown__editor = markdownIt(options)
       })
     }
   },
@@ -290,7 +290,7 @@ export default {
 @import "./styles/iconfont/iconfont.css";
 @border: 2px solid rgba(0, 0, 0, 0.25);
 
-.markdown-preview{
+.markdown__editor-preview{
   min-width: 20%;
   padding: 10px;
   font-size: 16px;
@@ -313,7 +313,7 @@ export default {
     max-width: 100%;
   }
 }
-.markdown-status{
+.markdown__editor-status{
   position: absolute;
   bottom: 0;
   padding: 10px;
@@ -348,7 +348,7 @@ export default {
     }
   }
 }
-.markdown-tool{
+.markdown__editor-tool{
   display: flex;
   overflow-x: auto;
   justify-content: space-between;
@@ -373,7 +373,7 @@ export default {
     }
   }
 }
-.markdown{
+.markdown__editor{
   & *{
     box-sizing: border-box;
   }
@@ -383,13 +383,13 @@ export default {
   background: #eee;
   height: 100%;
   width: 100%;
-  .markdown-wrapper{
+  .markdown__editor-wrapper{
     position: relative;
     height: 100%;
     display: flex;
     flex-direction: column;
   }
-  .markdown-content{
+  .markdown__editor-content{
     position: relative;
     flex: 1;
     .content-wrapper{
@@ -397,7 +397,7 @@ export default {
       height: 100%;
       width: 100%;
       display: flex;
-      .markdown-editor{
+      .markdown__editor-editor{
         font-size: 16px;
         flex: 1;
         border: 0;
