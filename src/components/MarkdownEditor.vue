@@ -80,6 +80,7 @@ export default {
   },
   created () {
     this.uploadOpt = {...this.uploadOpt, ...this.upload}
+    this.content = this.value
     this.history.push(this.content)
     let options = {
       html: true,

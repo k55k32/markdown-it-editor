@@ -1,9 +1,9 @@
 import Vue from 'vue'
-import editor from './components/MarkdownEditor'
+import App from './App'
 
 /* eslint-disable no-new */
 new Vue({
   el: '#app',
-  template: '<editor/>',
-  components: {editor}
+  template: '<App/>',
+  components: {App}
 })
