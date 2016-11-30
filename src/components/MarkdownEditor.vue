@@ -1,0 +1,277 @@
+<template lang="jade">
+.markdown(:class="{fullscreen:fullScreen}")
+  .markdown-wrapper
+    .markdown-tool
+      .action-group
+        i.iconfont.icon-bold(@click="doCode('**')" hotkey="ctrl+b")
+        i.iconfont.icon-italic(@click="doCode('*')" hotkey="ctrl+i")
+        i.iconfont.icon-underline(@click="doAction('<u></u>', 3)" hotkey="ctrl+u")
+        i.iconfont.icon-shanchuxian2(@click="doCode('~~')" hotkey="ctrl+d")
+        i.iconfont.icon-chain(@click="doAction('[Type Your Link Name](http://)', -1)" hotkey="ctrl+l")
+        i.iconfont.icon-code(@click="toCode()")
+        i.iconfont.icon-ellipsish(@click="doAction('\\n\\n---\\n\\n', 0, '')")
+        i.iconfont.icon-quoteleft(@click="doAction('\\n> ', -1, '')")
+      .action-group
+        i.iconfont.icon-mailreply(@click="undo()", :class="{disabled: !canUndo}" hotkey="ctrl+z")
+        i.iconfont.icon-mailforward(@click="redo()", :class="{disabled: !canRedo}" hotkey="ctrl+y")
+      .action-group
+        i.iconfont.icon-compress(@click="toggleFullScrenn" v-if="fullScreen")
+        i.iconfont.icon-expand(@click="toggleFullScrenn" v-else)
+    .markdown-content
+      .content-wrapper(@mousedown="beginDrag")
+        textarea.markdown-editor(ref="editor" v-model="content" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" @keydown="keydown")
+        .preview-tool(ref="preTool")
+          .allow-wrapper(@click.stop="showPreview = !showPreview")
+            .allow(:class="{'allow-right':showPreview, 'allow-left':!showPreview}")
+        .markdown-preview(ref="preview" v-html="preview" v-show="showPreview", :style="{width: previewWidth + '%'}")
+</template>
+
+<script>
+import markdownIt from 'markdown-it'
+
+function getEditorSelection (editor) {
+  return {
+    start: editor.selectionStart,
+    end: editor.selectionEnd
+  }
+}
+
+function setEditorRange (editor, start, length = 0) {
+  editor.focus()
+  editor.setSelectionRange(start, start + length)
+}
+
+const markdown = markdownIt({
+  html: true,
+  breaks: true
+})
+export default {
+  data () {
+    return {
+      content: '',
+      currentTimeout: '',
+      history: [],
+      currentIndex: 0,
+      showPreview: true,
+      previewWidth: 45,
+      fullScreen: false,
+      dragBegin: 0,
+      sizeBegin: 0
+    }
+  },
+  computed: {
+    preview () {
+      return markdown.render(this.content)
+    },
+    canUndo () {
+      return this.currentIndex > 0
+    },
+    canRedo () {
+      return this.currentIndex < this.history.length - 1
+    }
+  },
+  created () {
+    this.history.push(this.content)
+  },
+  watch: {
+    content () {
+      if (this.content === this.history[this.currentIndex]) return
+      window.clearTimeout(this.currentTimeout)
+      this.currentTimeout = setTimeout(() => {
+        this.saveHistory()
+      }, 500)
+    },
+    currentIndex () {
+      this.content = this.history[this.currentIndex]
+    }
+  },
+  methods: {
+    beginDrag (e) {
+      if (this.showPreview) {
+        e.target === this.$refs.preTool && (this.dragBegin = e.screenX)
+        this.sizeBegin = this.$refs.preview.clientWidth
+        document.body.addEventListener('mousemove', this.moveDrag)
+        document.body.addEventListener('mouseup', this.endDrag)
+      }
+    },
+    moveDrag (e) {
+      if (this.dragBegin) {
+        e.preventDefault()
+        let move = e.screenX - this.dragBegin
+        let moveWidth = this.sizeBegin - move
+        this.$refs.preview.style.width = moveWidth + 'px'
+      }
+    },
+    endDrag (e) {
+      e.preventDefault()
+      this.dragBegin = false
+      document.body.removeEventListener('moveDrag', this.moveDrag)
+      document.body.removeEventListener('mouseup', this.endDrag)
+    },
+    toggleFullScrenn () {
+      this.fullScreen = !this.fullScreen
+    },
+    saveHistory () {
+      this.history.splice(this.currentIndex + 1, this.history.length)
+      this.history.push(this.content)
+      this.currentIndex = this.history.length - 1
+    },
+    undo () {
+      this.canUndo && this.currentIndex --
+    },
+    redo () {
+      this.canRedo && this.currentIndex ++
+    },
+    keydown (e) {
+      if (e.ctrlKey === true) {
+        let code = e.key
+        let hotkey = 'ctrl+' + code
+        let el = this.$el.querySelector(`[hotkey='${hotkey}']`)
+        if (el) {
+          e.preventDefault()
+          el.click()
+        }
+      }
+    },
+    toCode () {
+      let select = this.getSelectStr()
+      let code = '`'
+      if (select.indexOf('\n') > -1) {
+        code = '```'
+      }
+      this.doCode(code)
+    },
+    insertToEditor (actionBefore, actionAfter, defaultStr) {
+      let editor = this.$refs.editor
+      let {start, end} = getEditorSelection(editor)
+      let {before, select, after} = this.selectedStr(start, end, defaultStr)
+      let newInsert = actionBefore + select + actionAfter
+      this.content = before + newInsert + after
+      this.$nextTick(() => {
+        setEditorRange(editor, start + actionBefore.length, select.length)
+      })
+    },
+    doAction (action, relativeEnd = 0, dstr) {
+      if (relativeEnd <= 0) relativeEnd = action.length + relativeEnd
+      let actionBefore = action.substr(0, relativeEnd)
+      let actionAfter = action.substr(relativeEnd)
+      this.insertToEditor(actionBefore, actionAfter, dstr)
+    },
+    doCode (code, dstr) {
+      this.insertToEditor(code, code, dstr)
+    },
+    getSelectStr () {
+      let editor = this.$refs.editor
+      let {start, end} = getEditorSelection(editor)
+      let {select} = this.selectedStr(start, end)
+      return select
+    },
+    selectedStr (start, end, defaultStr = 'default') {
+      let before = this.content.substr(0, start)
+      let select = this.content.substr(start, end - start) || defaultStr
+      let after = this.content.substr(end, this.content.length)
+      return {before, select, after}
+    }
+  }
+}
+</script>
+
+<style lang="less">
+@import "./styles/iconfont/iconfont.css";
+@border: 2px solid rgba(0, 0, 0, 0.25);
+.allow{
+  @size: 15px;
+  height: @size;
+  width: @size;
+  border-left:@border;
+  border-top:@border;
+  &.allow-left{
+    transform: rotate(-45deg);
+  }
+  &.allow-right{
+    transform: rotate(135deg);
+  }
+}
+.preview-tool{
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  .allow-wrapper{
+    padding: 20px 8px;
+    &:hover{
+      background: rgba(0, 0, 0, 0.1);
+      &>.allow{
+        border-color: #000;
+      }
+    }
+  }
+}
+.markdown-preview{
+  min-width: 20%;
+  overflow: auto;
+}
+.markdown-tool{
+  display: flex;
+  overflow-x: auto;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0px 10px;
+  .action-group{
+    margin-right: 25px;
+    display: flex;
+    &:last-child{
+      margin: 0;
+    }
+  }
+  .iconfont{
+    font-size: 1.5em;
+    padding:12px 15px;
+    &:hover:not(.disabled){
+      background: #fff;
+      cursor: pointer;
+    }
+    &.disabled{
+      color: #ccc;
+    }
+  }
+}
+.markdown{
+  & *{
+    box-sizing: border-box;
+  }
+  &.fullscreen{
+    position: fixed;
+  }
+  background: #eee;
+  height: 100%;
+  width: 100%;
+  .markdown-wrapper{
+    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  .markdown-content{
+    position: relative;
+    flex: 1;
+    .content-wrapper{
+      position: absolute;
+      height: 100%;
+      width: 100%;
+      display: flex;
+      .markdown-editor{
+        font-size: 16px;
+        flex: 1;
+        border: 0;
+        outline: 0;
+        resize: none;
+        border-right: 1px solid #eee;
+        position: relative;
+        box-sizing: border-box;
+        padding: 10px;
+        background: #fff;
+      }
+    }
+  }
+}
+</style>
