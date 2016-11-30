@@ -8,6 +8,8 @@
         i.iconfont.icon-underline(@click="doAction('<u></u>', 3)" hotkey="ctrl+u")
         i.iconfont.icon-shanchuxian2(@click="doCode('~~')" hotkey="ctrl+d")
         i.iconfont.icon-chain(@click="doAction('[Type Your Link Name](http://)', -1)" hotkey="ctrl+l")
+        i.iconfont.icon-image(@click="uploadClick" v-if="uploadOpt.url")
+          input(ref="upload", type="file", :name="uploadOpt.name" v-show="0", :accept="uploadOpt.accept" @change="fileUpload")
         i.iconfont.icon-code(@click="toCode()")
         i.iconfont.icon-ellipsish(@click="doAction('\\n\\n---\\n\\n', 0, '')")
         i.iconfont.icon-quoteleft(@click="doAction('\\n> ', -1, '')")
@@ -24,11 +26,12 @@
           .allow-wrapper(@click.stop="showPreview = !showPreview")
             .allow(:class="{'allow-right':showPreview, 'allow-left':!showPreview}")
         .markdown-preview(ref="preview" v-html="preview" v-show="showPreview", :style="{width: previewWidth + '%'}")
+    .markdown-status(:class="statusMessage.type", v-show="statusMessage.show") {{statusMessage.message}}
+
 </template>
 
 <script>
 import markdownIt from 'markdown-it'
-import hljs from 'highlightjs'
 import 'highlightjs/styles/github.css'
 
 function getEditorSelection (editor) {
@@ -44,18 +47,24 @@ function setEditorRange (editor, start, length = 0) {
 }
 
 export default {
-  props: ['value', 'options'],
+  props: ['value', 'options', 'upload'],
   data () {
     return {
       content: '',
       currentTimeout: '',
+      uploadOpt: {
+        name: 'file',
+        accept: 'image/jpg,image/jpeg,image/png',
+        url: 0
+      },
       history: [],
       currentIndex: 0,
       showPreview: true,
       previewWidth: 45,
       fullScreen: false,
       dragBegin: 0,
-      sizeBegin: 0
+      sizeBegin: 0,
+      statusMessage: {type: '', text: '', timeout: 0, show: false}
     }
   },
   computed: {
@@ -70,20 +79,31 @@ export default {
     }
   },
   created () {
+    this.uploadOpt = {...this.uploadOpt, ...this.upload}
     this.history.push(this.content)
-    this.markdown = markdownIt({
+    let options = {
       html: true,
       breaks: true,
-      highlight (str, lang) {
-        if (lang && hljs.getLanguage(lang)) {
-          try {
-            return hljs.highlight(lang, str).value
-          } catch (__) {}
-        }
-        return '' // use external default escaping
-      },
+      highlight: true,
+      defaultLang: 'javascript',
       ...this.options
-    })
+    }
+    this.markdown = markdownIt(options)
+    if (options.highlight === true) {
+      require.ensure('highlightjs', (require) => {
+        const hljs = require('highlightjs')
+        options.highlight = (str, lang) => {
+          lang = lang || options.defaultLang
+          if (lang && hljs.getLanguage(lang)) {
+            try {
+              return hljs.highlight(lang, str).value
+            } catch (__) {}
+          }
+          return ''
+        }
+        this.markdown = markdownIt(options)
+      })
+    }
   },
   watch: {
     value (value) {
@@ -102,6 +122,57 @@ export default {
     }
   },
   methods: {
+    _status (type, message, time = message.length / 4 * 1000) {
+      this.statusMessage.type = type
+      this.statusMessage.message = message
+      window.clearTimeout(this.statusMessage.timeout)
+      this.statusMessage.timeout = setTimeout(() => {
+        this.statusMessage.show = false
+      }, time)
+      this.statusMessage.show = true
+    },
+    success (message, timeout) {
+      this._status('success', message, timeout)
+    },
+    error (message, timeout) {
+      this._status('error', message, timeout)
+    },
+    info (message, timeout) {
+      this._status('info', message, timeout)
+    },
+    uploadClick () {
+      this.$refs.upload.click()
+    },
+    fileUpload () {
+      let input = this.$refs.upload
+      let fileData = new window.FormData()
+      fileData.append(input.name, input.files[0])
+      let xhr = new window.XMLHttpRequest()
+      xhr.onload = () => {
+        this.insertTo(`\n![alt](${xhr.responseText})\n`)
+        this.$emit('upload-success', xhr.responseText)
+        this.info('上传成功')
+      }
+      xhr.onerror = () => {
+        this.$emit('upload-error', xhr)
+        this.error('上传失败')
+      }
+      xhr.upload.onprogress = (e) => {
+        let pre = e.loaded / e.total
+        this.info(`上传中 ${e.loaded} / ${e.total} | ${pre}%`)
+      }
+      // xhr.onreadystatechange = () => {
+      //   if (xhr.readyState === 4) {
+      //     if (xhr.status !== 200) {
+      //       this.$emit('upload-error', xhr)
+      //       this.error(`服务器异常 ${xhr.status}`)
+      //     }
+      //   }
+      // }
+
+      xhr.open('POST', this.uploadOpt.url, true)
+      xhr.send(fileData)
+    },
     beginDrag (e) {
       if (this.showPreview) {
         e.target === this.$refs.preTool && (this.dragBegin = e.screenX)
@@ -175,7 +246,12 @@ export default {
       }
       this.doCode(code)
     },
-    insertToEditor (actionBefore, actionAfter, defaultStr) {
+    insertTo (text, position = getEditorSelection(this.$refs.editor).start) {
+      let before = this.content.substr(0, position)
+      let after = this.content.substr(position)
+      this.content = before + text + after
+    },
+    insertBetween (actionBefore, actionAfter, defaultStr) {
       let editor = this.$refs.editor
       let {start, end} = getEditorSelection(editor)
       let {before, select, after} = this.selectedStr(start, end, defaultStr)
@@ -189,10 +265,10 @@ export default {
       if (relativeEnd <= 0) relativeEnd = action.length + relativeEnd
       let actionBefore = action.substr(0, relativeEnd)
       let actionAfter = action.substr(relativeEnd)
-      this.insertToEditor(actionBefore, actionAfter, dstr)
+      this.insertBetween(actionBefore, actionAfter, dstr)
     },
     doCode (code, dstr) {
-      this.insertToEditor(code, code, dstr)
+      this.insertBetween(code, code, dstr)
     },
     getSelectStr () {
       let editor = this.$refs.editor
@@ -216,6 +292,7 @@ export default {
 
 .markdown-preview{
   min-width: 20%;
+  padding: 10px;
   font-size: 16px;
   overflow: auto;
   code {
@@ -232,8 +309,17 @@ export default {
     padding: 10px;
     margin-bottom: 10px;
   }
+  img{
+    max-width: 100%;
+  }
 }
-
+.markdown-status{
+  position: absolute;
+  bottom: 0;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.3);
+  width: 100%;
+}
 
 .allow{
   @size: 15px;
@@ -251,7 +337,7 @@ export default {
 .preview-tool{
   display: flex;
   align-items: center;
-  cursor: pointer;
+  cursor: w-resize;;
   .allow-wrapper{
     padding: 20px 8px;
     &:hover{
