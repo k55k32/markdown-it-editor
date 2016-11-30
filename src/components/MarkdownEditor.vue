@@ -378,6 +378,8 @@ export default {
     box-sizing: border-box;
   }
   &.fullscreen{
+    top: 0;
+    left: 0;
     position: fixed;
   }
   background: #eee;
