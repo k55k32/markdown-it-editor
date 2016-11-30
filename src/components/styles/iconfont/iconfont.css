@@ -1,10 +1,10 @@
 
 @font-face {font-family: "iconfont";
-  src: url('iconfont.eot?t=1480381557108'); /* IE9*/
-  src: url('iconfont.eot?t=1480381557108#iefix') format('embedded-opentype'), /* IE6-IE8 */
-  url('iconfont.woff?t=1480381557108') format('woff'), /* chrome, firefox */
-  url('iconfont.ttf?t=1480381557108') format('truetype'), /* chrome, firefox, opera, Safari, Android, iOS 4.2+*/
-  url('iconfont.svg?t=1480381557108#iconfont') format('svg'); /* iOS 4.1- */
+  src: url('iconfont.eot?t=1480485440756'); /* IE9*/
+  src: url('iconfont.eot?t=1480485440756#iefix') format('embedded-opentype'), /* IE6-IE8 */
+  url('iconfont.woff?t=1480485440756') format('woff'), /* chrome, firefox */
+  url('iconfont.ttf?t=1480485440756') format('truetype'), /* chrome, firefox, opera, Safari, Android, iOS 4.2+*/
+  url('iconfont.svg?t=1480485440756#iconfont') format('svg'); /* iOS 4.1- */
 }
 
 .iconfont {
@@ -27,6 +27,8 @@
 .icon-ellipsish:before { content: "\ea95"; }
 
 .icon-expand:before { content: "\eaa1"; }
+
+.icon-image:before { content: "\eb26"; }
 
 .icon-italic:before { content: "\eb31"; }
 
