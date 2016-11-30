@@ -32,7 +32,7 @@ var webpackConfig = merge(baseWebpackConfig, {
       }
     }),
     // extract css into its own file
-    new ExtractTextPlugin(utils.assetsPath('css/[name].css')),
+    new ExtractTextPlugin(utils.assetsPath('[name].css')),
   ]
 })
 
