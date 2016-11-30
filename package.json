@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "node build/dev-server.js",
     "build": "node build/build.js",
+    "build-publish": "npm run build & git commit -m auto-build & npm version patch & npm publish",
     "lint": "eslint --ext .js,.vue src"
   },
   "dependencies": {
