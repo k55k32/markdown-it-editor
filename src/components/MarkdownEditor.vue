@@ -15,8 +15,8 @@
         i.iconfont.icon-mailreply(@click="undo()", :class="{disabled: !canUndo}" hotkey="ctrl+z")
         i.iconfont.icon-mailforward(@click="redo()", :class="{disabled: !canRedo}" hotkey="ctrl+y")
       .action-group
-        i.iconfont.icon-compress(@click="toggleFullScrenn" v-if="fullScreen")
-        i.iconfont.icon-expand(@click="toggleFullScrenn" v-else)
+        i.iconfont.icon-compress(@click="toggleFullScreen" v-if="fullScreen")
+        i.iconfont.icon-expand(@click="toggleFullScreen" v-else)
     .markdown-content
       .content-wrapper(@mousedown="beginDrag")
         textarea.markdown-editor(ref="editor" v-model="content" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" @keydown="keydown")
@@ -28,6 +28,8 @@
 
 <script>
 import markdownIt from 'markdown-it'
+import hljs from 'highlightjs'
+import 'highlightjs/styles/github.css'
 
 function getEditorSelection (editor) {
   return {
@@ -41,11 +43,8 @@ function setEditorRange (editor, start, length = 0) {
   editor.setSelectionRange(start, start + length)
 }
 
-const markdown = markdownIt({
-  html: true,
-  breaks: true
-})
 export default {
+  props: ['value', 'options'],
   data () {
     return {
       content: '',
@@ -61,7 +60,7 @@ export default {
   },
   computed: {
     preview () {
-      return markdown.render(this.content)
+      return this.markdown.render(this.content)
     },
     canUndo () {
       return this.currentIndex > 0
@@ -72,9 +71,26 @@ export default {
   },
   created () {
     this.history.push(this.content)
+    this.markdown = markdownIt({
+      html: true,
+      breaks: true,
+      highlight (str, lang) {
+        if (lang && hljs.getLanguage(lang)) {
+          try {
+            return hljs.highlight(lang, str).value
+          } catch (__) {}
+        }
+        return '' // use external default escaping
+      },
+      ...this.options
+    })
   },
   watch: {
+    value (value) {
+      if (this.content !== value) this.content = value
+    },
     content () {
+      this.$emit('input', this.content)
       if (this.content === this.history[this.currentIndex]) return
       window.clearTimeout(this.currentTimeout)
       this.currentTimeout = setTimeout(() => {
@@ -108,7 +124,13 @@ export default {
       document.body.removeEventListener('moveDrag', this.moveDrag)
       document.body.removeEventListener('mouseup', this.endDrag)
     },
-    toggleFullScrenn () {
+    closeFullScreen () {
+      this.fullScreen = false
+    },
+    openFullScreen () {
+      this.fullScreen = true
+    },
+    toggleFullScreen () {
       this.fullScreen = !this.fullScreen
     },
     saveHistory () {
@@ -123,14 +145,26 @@ export default {
       this.canRedo && this.currentIndex ++
     },
     keydown (e) {
+      let code = e.key
       if (e.ctrlKey === true) {
-        let code = e.key
         let hotkey = 'ctrl+' + code
         let el = this.$el.querySelector(`[hotkey='${hotkey}']`)
         if (el) {
           e.preventDefault()
           el.click()
         }
+      } else if (code === 'Tab') {
+        e.preventDefault()
+        let editor = this.$refs.editor
+        let {start, end} = getEditorSelection(editor)
+        let {before, select, after} = this.selectedStr(start, end, '')
+        let lines = select.split('\n')
+        lines = lines.map(l => '  ' + l)
+        let newInsert = lines.join('\n')
+        this.content = before + newInsert + after
+        this.$nextTick(() => {
+          setEditorRange(editor, before.length + 2, newInsert.length)
+        })
       }
     },
     toCode () {
@@ -179,6 +213,28 @@ export default {
 <style lang="less">
 @import "./styles/iconfont/iconfont.css";
 @border: 2px solid rgba(0, 0, 0, 0.25);
+
+.markdown-preview{
+  min-width: 20%;
+  font-size: 16px;
+  overflow: auto;
+  code {
+      display: inline-block;
+      border: 1px solid rgba(0,0,0,0.08);
+      padding: 10px;
+      border-radius: 5px;
+      background: rgba(0,0,0,0.05);
+      margin-bottom: 10px;
+  }
+  blockquote{
+    border-left: 5px solid rgba(0,0,0,0.2);
+    background: rgba(0,0,0,0.1);
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+}
+
+
 .allow{
   @size: 15px;
   height: @size;
@@ -205,10 +261,6 @@ export default {
       }
     }
   }
-}
-.markdown-preview{
-  min-width: 20%;
-  overflow: auto;
 }
 .markdown-tool{
   display: flex;
