@@ -1,5 +1,5 @@
 <template lang="jade">
-.markdown__editor(:class="{fullscreen:fullScreen}", :style="{zIndex: zIndex || 1}")
+.markdown__editor(:class="{fullscreen:fullScreen}", :style="{zIndex: zIndex || 1, height: height || '50vh'}")
   .markdown__editor-wrapper
     .markdown__editor-tool(@mouseover="toolover" @mouseout="toolout")
       .action-group
@@ -19,7 +19,7 @@
       .action-group
         i.iconfont.icon-compress(@click="toggleFullScreen" v-if="fullScreen")
         i.iconfont.icon-expand(@click="toggleFullScreen" v-else)
-    .markdown__editor-content
+    .markdown__editor-content.markdown-body
       .content-wrapper(@mousedown="beginDrag")
         textarea.markdown__editor-editor(ref="editor" v-model="content" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" @keydown="keydown")
         .preview-tool(ref="preTool")
@@ -34,7 +34,6 @@
 <script>
 import markdownIt from 'markdown-it'
 import 'highlightjs/styles/github.css'
-
 function getEditorSelection (editor) {
   return {
     start: editor.selectionStart,
@@ -48,10 +47,11 @@ function setEditorRange (editor, start, length = 0) {
 }
 
 export default {
-  props: ['value', 'options', 'upload', 'zIndex'],
+  props: ['value', 'options', 'upload', 'zIndex', 'height'],
   data () {
     return {
       content: '',
+      preview: '',
       currentTimeout: '',
       uploadOpt: {
         name: 'file',
@@ -70,9 +70,6 @@ export default {
     }
   },
   computed: {
-    preview () {
-      return this.markdown__editor.render(this.content)
-    },
     canUndo () {
       return this.currentIndex > 0
     },
@@ -87,12 +84,13 @@ export default {
     let options = {
       html: true,
       breaks: true,
-      highlight: true,
+      useHighlight: true,
       defaultLang: 'javascript',
       ...this.options
     }
-    this.markdown__editor = markdownIt(options)
-    if (options.highlight === true) {
+    this.markdownit = markdownIt(options)
+    this.renderIt()
+    if (options.useHighlight === true) {
       require.ensure('highlightjs', (require) => {
         const hljs = require('highlightjs')
         options.highlight = (str, lang) => {
@@ -104,7 +102,8 @@ export default {
           }
           return ''
         }
-        this.markdown__editor = markdownIt(options)
+        this.markdownit = markdownIt(options)
+        this.renderIt()
       })
     }
   },
@@ -113,6 +112,7 @@ export default {
       if (this.content !== value) this.content = value
     },
     content () {
+      this.renderIt()
       this.$emit('input', this.content)
       if (this.content === this.history[this.currentIndex]) return
       window.clearTimeout(this.currentTimeout)
@@ -125,6 +125,9 @@ export default {
     }
   },
   methods: {
+    renderIt () {
+      this.preview = this.markdownit.render(this.content)
+    },
     _status (type, text, time = text.length / 4 * 1000) {
       window.clearTimeout(this.statusMessage.timeout)
       let timeout = setTimeout(() => {
@@ -247,16 +250,29 @@ export default {
         }
       } else if (code === 'Tab') {
         e.preventDefault()
+        const TAB_SPACE = '  '
         let editor = this.$refs.editor
         let {start, end} = getEditorSelection(editor)
         let {before, select, after} = this.selectedStr(start, end, '')
-        let lines = select.split('\n')
-        lines = lines.map(l => '  ' + l)
-        let newInsert = lines.join('\n')
-        this.content = before + newInsert + after
-        this.$nextTick(() => {
-          setEditorRange(editor, before.length + 2, newInsert.length)
-        })
+        if (select.indexOf('\n') > -1) {
+          let beforeLR = before.substr(0, before.lastIndexOf('\n') + 1)
+          let afterLR = before.substr(beforeLR.length)
+          before = beforeLR
+          select = afterLR + select
+          let lines = select.split('\n')
+          if (e.shiftKey) {
+            lines = lines.map(l => l.substr(0, TAB_SPACE.length).replace(/(^\s*)/g, '') + l.substr(TAB_SPACE.length))
+          } else {
+            lines = lines.map(l => TAB_SPACE + l)
+          }
+          let newInsert = lines.join('\n')
+          this.content = before + newInsert + after
+          this.$nextTick(() => {
+            setEditorRange(editor, before.length, newInsert.length)
+          })
+        } else {
+          this.insertTo(TAB_SPACE, start)
+        }
       }
     },
     toCode () {
@@ -271,6 +287,9 @@ export default {
       let before = this.content.substr(0, position)
       let after = this.content.substr(position)
       this.content = before + text + after
+      this.$nextTick(() => {
+        setEditorRange(this.$refs.editor, position + text.length)
+      })
     },
     insertBetween (actionBefore, actionAfter, defaultStr) {
       let editor = this.$refs.editor
@@ -309,4 +328,5 @@ export default {
 
 <style lang="less">
 @import "./styles/editor.less";
+@import "./styles/github-markdown.css";
 </style>

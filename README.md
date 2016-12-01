@@ -1,41 +1,36 @@
 # markdown-it-editor
 
-> a markdown rich text editor
+> A Vue.js 2.0 Markdown Rich Text Editor
 
-## For use
-
-``` bash
-# install dependencies
-npm install markdown-it
-
-# serve with hot reload at localhost:8080
-npm run dev
-
-# build for production with minification
-npm run build
+## install
+```node
+npm i markdown-it-editor -S
 ```
 
-```javascript
-options: {
-  ...markdown-it options all support
-  ...editor custom options
-  highlight: boolean || funciton,
-  defaultLang: 'javascript' || string
-},
+## Quick Start
+```html
+<template>
+  <div id="app">
+    <markdown-editor v-model="content"></markdown-editor>  
+  </div>
+</template>
 
-// custom options eg.
-if (options.highlight === true) {
-  loadHighlightjs(options.defaultLang) // that will beautify your code
-  // you can use  
-  //"```javascript
-  // you code
-  //```" to use the highlight
+<script>
+import MarkdownEditor from 'markdown-it-editor'
+export default {
+  components: { MarkdownEditor },
+  data () {
+    return {
+      content: '# hello world'
+    }
+  }
 }
+</script>
 
-
-upload: {
-  file: '',
-  url: '',
-  accept: ''
+<style lang="css">
+#app{
+  margin: auto;
+  padding-top: 20px;
 }
+</style>
 ```
