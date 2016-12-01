@@ -1,0 +1,150 @@
+@import "./iconfont/iconfont.css";
+@import "./animate.less";
+@border: 2px solid rgba(0, 0, 0, 0.25);
+@primark-color: #f5f5f5;
+@statusOpacity: 0.12;
+@success: rgba(101, 255, 177, @statusOpacity);
+@error: rgba(255, 101, 101, @statusOpacity);
+@info: rgba(130, 232, 255, @statusOpacity);
+@stautsColor: #333;
+.markdown__editor-preview{
+  min-width: 20%;
+  padding: 10px;
+  font-size: 16px;
+  overflow: auto;
+  code {
+      display: inline-block;
+      border: 1px solid rgba(0,0,0,0.08);
+      padding: 10px;
+      border-radius: 5px;
+      background: rgba(0,0,0,0.05);
+      margin-bottom: 10px;
+  }
+  blockquote{
+    border-left: 5px solid rgba(0,0,0,0.08);
+    background: rgba(0,0,0,0.05);
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+  img{
+    max-width: 100%;
+  }
+}
+.markdown__editor-status{
+  position: absolute;
+  bottom: 0;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.1);
+  width: 100%;
+  color: #333;
+  &.info{
+    background: @info;
+  }
+  &.success{
+    background: @success;
+  }
+  &.error{
+    background: @error;
+  }
+}
+
+.allow{
+  @size: 15px;
+  height: @size;
+  width: @size;
+  border-left:@border;
+  border-top:@border;
+  &.allow-left{
+    transform: rotate(-45deg);
+  }
+  &.allow-right{
+    transform: rotate(135deg);
+  }
+}
+.preview-tool{
+  display: flex;
+  align-items: center;
+  cursor: w-resize;;
+  .allow-wrapper{
+    padding: 20px 8px;
+    &:hover{
+      background: rgba(0, 0, 0, 0.1);
+      &>.allow{
+        border-color: #000;
+      }
+    }
+  }
+}
+.markdown__editor-tool{
+  display: flex;
+  overflow-x: auto;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0px 10px;
+  .action-group{
+    margin-right: 25px;
+    display: flex;
+    &:last-child{
+      margin: 0;
+    }
+  }
+  .iconfont{
+    font-size: 1.5em;
+    padding:12px 15px;
+    &:hover:not(.disabled){
+      background: #fff;
+      cursor: pointer;
+    }
+    &.disabled{
+      color: #ccc;
+    }
+  }
+}
+.markdown__editor{
+  background: @primark-color;
+  height: 100%;
+  width: 100%;
+  border: 1px solid @primark-color;
+  & *{
+    box-sizing: border-box;
+  }
+  &.fullscreen{
+    top: 0;
+    left: 0;
+    position: fixed;
+  }
+  .markdown__editor-wrapper{
+    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  .markdown__editor-content{
+    position: relative;
+    flex: 1;
+    .content-wrapper{
+      position: absolute;
+      height: 100%;
+      width: 100%;
+      display: flex;
+      .markdown__editor-editor{
+        font-size: 16px;
+        flex: 1;
+        border: 0;
+        outline: 0;
+        resize: none;
+        border-right: 1px solid @primark-color;
+        position: relative;
+        box-sizing: border-box;
+        padding: 10px;
+        background: #fff;
+      }
+    }
+  }
+  .hotkey-remind{
+    position: fixed;
+    padding: 5px 8px;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.5);
+  }
+}

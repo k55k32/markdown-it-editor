@@ -1,7 +1,7 @@
 <template lang="jade">
-.markdown__editor(:class="{fullscreen:fullScreen}")
+.markdown__editor(:class="{fullscreen:fullScreen}", :style="{zIndex: zIndex || 1}")
   .markdown__editor-wrapper
-    .markdown__editor-tool
+    .markdown__editor-tool(@mouseover="toolover" @mouseout="toolout")
       .action-group
         i.iconfont.icon-bold(@click="doCode('**')" hotkey="ctrl+b")
         i.iconfont.icon-italic(@click="doCode('*')" hotkey="ctrl+i")
@@ -10,7 +10,7 @@
         i.iconfont.icon-chain(@click="doAction('[Type Your Link Name](http://)', -1)" hotkey="ctrl+l")
         i.iconfont.icon-image(@click="uploadClick" v-if="uploadOpt.url")
           input(ref="upload", type="file", :name="uploadOpt.name" v-show="0", :accept="uploadOpt.accept" @change="fileUpload")
-        i.iconfont.icon-code(@click="toCode()")
+        i.iconfont.icon-code(@click="toCode()" hotkey="ctrl+`")
         i.iconfont.icon-ellipsish(@click="doAction('\\n\\n---\\n\\n', 0, '')")
         i.iconfont.icon-quoteleft(@click="doAction('\\n> ', -1, '')")
       .action-group
@@ -26,8 +26,9 @@
           .allow-wrapper(@click.stop="showPreview = !showPreview")
             .allow(:class="{'allow-right':showPreview, 'allow-left':!showPreview}")
         .markdown__editor-preview(ref="preview" v-html="preview" v-show="showPreview", :style="{width: previewWidth + '%'}")
-    .markdown__editor-status(:class="statusMessage.type", v-show="statusMessage.show") {{statusMessage.message}}
-
+    .hotkey-remind(v-show="hotkeyRemind.show", :style="{top: hotkeyRemind.top, left: hotkeyRemind.left}") {{hotkeyRemind.text}}
+    transition(enter-active-class="fade in" leave-active-class="fade out")
+      .markdown__editor-status(:class="statusMessage.type", v-show="statusMessage.show") {{statusMessage.text}}
 </template>
 
 <script>
@@ -47,7 +48,7 @@ function setEditorRange (editor, start, length = 0) {
 }
 
 export default {
-  props: ['value', 'options', 'upload'],
+  props: ['value', 'options', 'upload', 'zIndex'],
   data () {
     return {
       content: '',
@@ -64,6 +65,7 @@ export default {
       fullScreen: false,
       dragBegin: 0,
       sizeBegin: 0,
+      hotkeyRemind: {show: false, text: '', top: 0, left: 0},
       statusMessage: {type: '', text: '', timeout: 0, show: false}
     }
   },
@@ -123,14 +125,12 @@ export default {
     }
   },
   methods: {
-    _status (type, message, time = message.length / 4 * 1000) {
-      this.statusMessage.type = type
-      this.statusMessage.message = message
+    _status (type, text, time = text.length / 4 * 1000) {
       window.clearTimeout(this.statusMessage.timeout)
-      this.statusMessage.timeout = setTimeout(() => {
+      let timeout = setTimeout(() => {
         this.statusMessage.show = false
       }, time)
-      this.statusMessage.show = true
+      this.statusMessage = {type, text, timeout, show: true}
     },
     success (message, timeout) {
       this._status('success', message, timeout)
@@ -140,6 +140,26 @@ export default {
     },
     info (message, timeout) {
       this._status('info', message, timeout)
+    },
+    closeStatus () {
+      this.statusMessage.show = false
+    },
+    toolout () {
+      this.hotkeyRemind.show = false
+    },
+    toolover (e) {
+      let tg = e.target
+      let hk = tg.getAttribute('hotkey')
+      let hotkeyRemind = this.hotkeyRemind
+      if (hk) {
+        let remind = 'hot key: ' + hk
+        hotkeyRemind.left = e.x - e.offsetX + 'px'
+        hotkeyRemind.top = e.y + tg.clientHeight - e.offsetY + 'px'
+        hotkeyRemind.text = remind.toUpperCase()
+        hotkeyRemind.show = true
+      } else {
+        hotkeyRemind.show = false
+      }
     },
     uploadClick () {
       this.$refs.upload.click()
@@ -241,11 +261,11 @@ export default {
     },
     toCode () {
       let select = this.getSelectStr()
-      let code = '`'
       if (select.indexOf('\n') > -1) {
-        code = '```'
+        this.insertBetween('```\n', '\n```')
+      } else {
+        this.doCode('`')
       }
-      this.doCode(code)
     },
     insertTo (text, position = getEditorSelection(this.$refs.editor).start) {
       let before = this.content.substr(0, position)
@@ -288,131 +308,5 @@ export default {
 </script>
 
 <style lang="less">
-@import "./styles/iconfont/iconfont.css";
-@border: 2px solid rgba(0, 0, 0, 0.25);
-
-.markdown__editor-preview{
-  min-width: 20%;
-  padding: 10px;
-  font-size: 16px;
-  overflow: auto;
-  code {
-      display: inline-block;
-      border: 1px solid rgba(0,0,0,0.08);
-      padding: 10px;
-      border-radius: 5px;
-      background: rgba(0,0,0,0.05);
-      margin-bottom: 10px;
-  }
-  blockquote{
-    border-left: 5px solid rgba(0,0,0,0.2);
-    background: rgba(0,0,0,0.1);
-    padding: 10px;
-    margin-bottom: 10px;
-  }
-  img{
-    max-width: 100%;
-  }
-}
-.markdown__editor-status{
-  position: absolute;
-  bottom: 0;
-  padding: 10px;
-  background: rgba(0, 0, 0, 0.3);
-  width: 100%;
-}
-
-.allow{
-  @size: 15px;
-  height: @size;
-  width: @size;
-  border-left:@border;
-  border-top:@border;
-  &.allow-left{
-    transform: rotate(-45deg);
-  }
-  &.allow-right{
-    transform: rotate(135deg);
-  }
-}
-.preview-tool{
-  display: flex;
-  align-items: center;
-  cursor: w-resize;;
-  .allow-wrapper{
-    padding: 20px 8px;
-    &:hover{
-      background: rgba(0, 0, 0, 0.1);
-      &>.allow{
-        border-color: #000;
-      }
-    }
-  }
-}
-.markdown__editor-tool{
-  display: flex;
-  overflow-x: auto;
-  justify-content: space-between;
-  width: 100%;
-  padding: 0px 10px;
-  .action-group{
-    margin-right: 25px;
-    display: flex;
-    &:last-child{
-      margin: 0;
-    }
-  }
-  .iconfont{
-    font-size: 1.5em;
-    padding:12px 15px;
-    &:hover:not(.disabled){
-      background: #fff;
-      cursor: pointer;
-    }
-    &.disabled{
-      color: #ccc;
-    }
-  }
-}
-.markdown__editor{
-  & *{
-    box-sizing: border-box;
-  }
-  &.fullscreen{
-    top: 0;
-    left: 0;
-    position: fixed;
-  }
-  background: #eee;
-  height: 100%;
-  width: 100%;
-  .markdown__editor-wrapper{
-    position: relative;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-  }
-  .markdown__editor-content{
-    position: relative;
-    flex: 1;
-    .content-wrapper{
-      position: absolute;
-      height: 100%;
-      width: 100%;
-      display: flex;
-      .markdown__editor-editor{
-        font-size: 16px;
-        flex: 1;
-        border: 0;
-        outline: 0;
-        resize: none;
-        border-right: 1px solid #eee;
-        position: relative;
-        box-sizing: border-box;
-        padding: 10px;
-        background: #fff;
-      }
-    }
-  }
-}
+@import "./styles/editor.less";
 </style>

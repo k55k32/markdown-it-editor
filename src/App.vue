@@ -9,7 +9,7 @@ export default {
   components: { editor },
   data () {
     return {
-      content: 'hello'
+      content: 'hello world'
     }
   }
 }
@@ -17,6 +17,8 @@ export default {
 
 <style lang="css">
 #app{
+  margin: auto;
+  padding-top: 20px;
   height: 80vh;
   width: 80vw;
 }
