@@ -7,6 +7,7 @@
 @error: rgba(255, 101, 101, @statusOpacity);
 @info: rgba(130, 232, 255, @statusOpacity);
 @stautsColor: #333;
+@tool-bg: #f7f7f7;
 .markdown__editor-preview{
   min-width: 20%;
   padding: 10px;
@@ -47,10 +48,11 @@
 .preview-tool{
   display: flex;
   align-items: center;
-  cursor: w-resize;;
+  cursor: w-resize;
   .allow-wrapper{
     padding: 20px 8px;
     &:hover{
+      cursor: pointer;
       background: rgba(0, 0, 0, 0.1);
       &>.allow{
         border-color: #000;
@@ -64,6 +66,7 @@
   justify-content: space-between;
   width: 100%;
   padding: 0px 10px;
+  background: @tool-bg;
   .action-group{
     margin-right: 25px;
     display: flex;

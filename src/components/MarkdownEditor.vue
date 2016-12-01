@@ -33,7 +33,6 @@
 
 <script>
 import markdownIt from 'markdown-it'
-import 'highlightjs/styles/github.css'
 function getEditorSelection (editor) {
   return {
     start: editor.selectionStart,
@@ -92,6 +91,7 @@ export default {
     this.renderIt()
     if (options.useHighlight === true) {
       require.ensure('highlightjs', (require) => {
+        require('highlightjs/styles/github.css')
         const hljs = require('highlightjs')
         options.highlight = (str, lang) => {
           lang = lang || options.defaultLang
