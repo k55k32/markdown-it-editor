@@ -1,7 +1,7 @@
 
 # markdown-it-editor
 
-> A Vue.js 2.0 Markdown Rich Text Editor
+> A Vue.js 2.0 Markdown Rich Text Editor [@Github](https:/github.com/k55k32/markdown-it-editor)
 
 ![preview-image](https://k55k32.github.io/markdown-it-editor/readme/preview.jpg)
 

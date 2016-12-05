@@ -6,7 +6,6 @@
 <script>
 import editor from './components/MarkdownEditor'
 const content = require('../README.md')
-console.log(content)
 export default {
   components: { editor },
   data () {

@@ -41,8 +41,8 @@ function getEditorSelection (editor) {
 }
 
 function setEditorRange (editor, start, length = 0) {
-  editor.focus()
   editor.setSelectionRange(start, start + length)
+  editor.focus()
 }
 
 export default {
@@ -128,7 +128,7 @@ export default {
   methods: {
     scrollReset () {
       let tag = this.$refs.editor
-      let scrollHeight = (tag.scrollHeight - tag.clientHeight) || 1
+      let scrollHeight = (tag.scrollHeight - tag.clientHeight) || tag.scrollHeight
       let scroll = tag.scrollTop / scrollHeight
       if (scroll > 0.7) scroll += 0.1
       let preview = this.$refs.preview
