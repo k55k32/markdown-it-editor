@@ -1,6 +1,6 @@
 {
   "name": "markdown-it-editor",
-  "version": "1.0.17",
+  "version": "1.0.18",
   "description": "a markdown rich text editor",
   "author": "diamond<diamondfsd@gmail.com>",
   "main": "lib/index.js",
