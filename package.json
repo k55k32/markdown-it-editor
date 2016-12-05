@@ -3,7 +3,6 @@
   "version": "1.0.17",
   "description": "a markdown rich text editor",
   "author": "diamond<diamondfsd@gmail.com>",
-  "private": false,
   "main": "lib/index.js",
   "scripts": {
     "dev": "node build/dev-server.js",
