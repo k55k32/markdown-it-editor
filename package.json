@@ -8,6 +8,8 @@
   "scripts": {
     "dev": "node build/dev-server.js",
     "build": "node build/build.js",
+    "docs": "node build/docs.js",
+    "build-docs": "rmdir /S /Q docs & npm run docs &git add . & git commit -m auto-docs & npm version patch & npm publish & git push",
     "build-publish": "rmdir /S /Q lib & npm run build &git add . & git commit -m auto-build & npm version patch & npm publish & git push",
     "lint": "eslint --ext .js,.vue src"
   },
