@@ -19,7 +19,7 @@ npm i markdown-it-editor -S
 </template>
 
 <script>
-import MarkdownEditor from './components/MarkdownEditor'
+import MarkdownEditor from 'markdown-it-editor'
 export default {
   components: { MarkdownEditor },
   data () {
