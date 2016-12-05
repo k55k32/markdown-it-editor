@@ -11,6 +11,7 @@ npm i markdown-it-editor -S
 ```
 
 ## Quick Start
+use .vue template
 ```html
 <template>
 <div id="app">
@@ -39,6 +40,34 @@ export default {
 }
 </style>
 ```
+You can also use js in html. In this way you have to add vuejs by yourself [@Demo](static/demo.html)
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <!-- markdown editor style -->
+    <link rel="stylesheet" href="../lib/index.css">
+  </head>
+  <body>
+    <div id="app">
+      <markdown-editor v-model="content"></markdown-editor>
+    </div>
+  </body>
+  <!-- vuejs -->
+  <script src="//cdn.bootcss.com/vue/2.1.4/vue.min.js"></script>
+  <!-- markdown editor component -->
+  <script src="../lib/index.js"></script>
+  <script type="text/javascript">
+    var vue = new Vue({
+      el: '#app',
+      data: { content: '# hello world' }
+    })
+  </script>
+</html>
+```
+
 
 ## Component Attributes
 
