@@ -77,6 +77,10 @@ module.exports = {
           limit: 10,
           name: utils.assetsPath('css/[name].[hash:7].[ext]')
         }
+      },
+      {
+        test: /\.md$/,
+        loader: '../string-loader'
       }
     ]
   },
