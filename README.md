@@ -40,7 +40,7 @@ export default {
 }
 </style>
 ```
-You can also use js in html. In this way you have to add vuejs by yourself [@Demo](static/demo.html)
+You can also use that in html. In this way you have to add vuejs by yourself [@Demo](http://md.diamondfsd.com/static/demo.html)
 ```html
 <!DOCTYPE html>
 <html>
