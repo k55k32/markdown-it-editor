@@ -20,7 +20,7 @@ use .vue template
 </template>
 
 <script>
-import MarkdownEditor from 'markdown-it-editor'
+import { MarkdownEditor } from 'markdown-it-editor'
 export default {
   components: { MarkdownEditor },
   data () {
