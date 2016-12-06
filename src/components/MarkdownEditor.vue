@@ -25,7 +25,7 @@
         .preview-tool(ref="preTool")
           .allow-wrapper(@click.stop="showPreview = !showPreview")
             .allow(:class="{'allow-right':showPreview, 'allow-left':!showPreview}")
-        preview(ref="preview", :content="content", :options="options", v-if="showPreview", :style="{width: previewWidth}")
+        preview(ref="preview", :content="content", :options="options", v-show="showPreview", :style="{width: previewWidth}")
     .hotkey-remind(v-show="hotkeyRemind.show", :style="{top: hotkeyRemind.top, left: hotkeyRemind.left}") {{hotkeyRemind.text}}
     transition(enter-active-class="fade in" leave-active-class="fade out")
       .markdown__editor-status(:class="statusMessage.type", v-show="statusMessage.show") {{statusMessage.text}}
@@ -43,7 +43,7 @@ function setEditorRange (editor, start, length = 0) {
   editor.setSelectionRange(start, start + length)
   editor.focus()
 }
-
+import Preview from './Preview'
 export default {
   props: ['value', 'options', 'upload', 'zIndex', 'height'],
   data () {
@@ -58,7 +58,7 @@ export default {
       },
       history: [],
       currentIndex: 0,
-      showPreview: false,
+      showPreview: true,
       previewWidth: '45%',
       fullScreen: false,
       dragBegin: 0,
@@ -67,11 +67,7 @@ export default {
       statusMessage: {type: '', text: '', timeout: 0, show: false}
     }
   },
-  components: {
-    Preview (resolve) {
-      require(['./Preview.vue'], resolve)
-    }
-  },
+  components: { Preview },
   computed: {
     canUndo () {
       return this.currentIndex > 0
