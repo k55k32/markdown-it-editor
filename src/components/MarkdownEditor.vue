@@ -19,7 +19,7 @@
       .action-group
         i.iconfont.icon-compress(@click="toggleFullScreen" v-if="fullScreen")
         i.iconfont.icon-expand(@click="toggleFullScreen" v-else)
-    .markdown__editor-content.markdown-body
+    .markdown__editor-content
       .content-wrapper(@mousedown="beginDrag")
         textarea.markdown__editor-editor(@scroll="scrollReset" ref="editor" v-model="content" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" @keydown="keydown")
         .preview-tool(ref="preTool")
