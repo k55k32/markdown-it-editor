@@ -25,14 +25,13 @@
         .preview-tool(ref="preTool")
           .allow-wrapper(@click.stop="showPreview = !showPreview")
             .allow(:class="{'allow-right':showPreview, 'allow-left':!showPreview}")
-        .markdown__editor-preview(ref="preview" v-html="preview" v-show="showPreview", :style="{width: previewWidth + '%'}")
+        preview(ref="preview", :content="content", :options="options", v-if="showPreview", :style="{width: previewWidth}")
     .hotkey-remind(v-show="hotkeyRemind.show", :style="{top: hotkeyRemind.top, left: hotkeyRemind.left}") {{hotkeyRemind.text}}
     transition(enter-active-class="fade in" leave-active-class="fade out")
       .markdown__editor-status(:class="statusMessage.type", v-show="statusMessage.show") {{statusMessage.text}}
 </template>
 
 <script>
-import markdownIt from 'markdown-it'
 function getEditorSelection (editor) {
   return {
     start: editor.selectionStart,
@@ -59,13 +58,18 @@ export default {
       },
       history: [],
       currentIndex: 0,
-      showPreview: true,
-      previewWidth: 45,
+      showPreview: false,
+      previewWidth: '45%',
       fullScreen: false,
       dragBegin: 0,
       sizeBegin: 0,
       hotkeyRemind: {show: false, text: '', top: 0, left: 0},
       statusMessage: {type: '', text: '', timeout: 0, show: false}
+    }
+  },
+  components: {
+    Preview (resolve) {
+      require(['./Preview.vue'], resolve)
     }
   },
   computed: {
@@ -80,39 +84,12 @@ export default {
     this.uploadOpt = {...this.uploadOpt, ...this.upload}
     this.content = this.value
     this.history.push(this.content)
-    let options = {
-      html: true,
-      breaks: true,
-      useHighlight: true,
-      defaultLang: 'javascript',
-      ...this.options
-    }
-    this.markdownit = markdownIt(options)
-    this.renderIt()
-    if (options.useHighlight === true) {
-      require.ensure('highlightjs', (require) => {
-        require('highlightjs/styles/github.css')
-        const hljs = require('highlightjs')
-        options.highlight = (str, lang) => {
-          lang = lang || options.defaultLang
-          if (lang && hljs.getLanguage(lang)) {
-            try {
-              return hljs.highlight(lang, str).value
-            } catch (__) {}
-          }
-          return ''
-        }
-        this.markdownit = markdownIt(options)
-        this.renderIt()
-      })
-    }
   },
   watch: {
     value (value) {
       if (this.content !== value) this.content = value
     },
     content () {
-      this.renderIt()
       this.$emit('input', this.content)
       this.scrollReset()
       if (this.content === this.history[this.currentIndex]) return
@@ -127,16 +104,15 @@ export default {
   },
   methods: {
     scrollReset () {
-      let tag = this.$refs.editor
-      let scrollHeight = (tag.scrollHeight - tag.clientHeight) || tag.scrollHeight
-      let scroll = tag.scrollTop / scrollHeight
-      if (scroll > 0.7) scroll += 0.1
-      let preview = this.$refs.preview
-      let preTop = (preview.scrollHeight - tag.clientHeight) * scroll
-      preview.scrollTop = preTop
-    },
-    renderIt () {
-      this.preview = this.markdownit.render(this.content)
+      if (this.showPreview) {
+        let tag = this.$refs.editor
+        let scrollHeight = (tag.scrollHeight - tag.clientHeight) || tag.scrollHeight
+        let scroll = tag.scrollTop / scrollHeight
+        if (scroll > 0.7) scroll += 0.1
+        let preview = this.$refs.preview
+        let preTop = (preview.scrollHeight - tag.clientHeight) * scroll
+        preview.scrollTop = preTop
+      }
     },
     _status (type, text, time = text.length / 4 * 1000) {
       window.clearTimeout(this.statusMessage.timeout)
@@ -204,22 +180,13 @@ export default {
           this.info(`上传中 ${e.loaded} / ${e.total} | ${pre}%`)
         }
       }
-      // xhr.onreadystatechange = () => {
-      //   if (xhr.readyState === 4) {
-      //     if (xhr.status !== 200) {
-      //       this.$emit('upload-error', xhr)
-      //       this.error(`服务器异常 ${xhr.status}`)
-      //     }
-      //   }
-      // }
-
       xhr.open('POST', this.uploadOpt.url, true)
       xhr.send(fileData)
     },
     beginDrag (e) {
       if (this.showPreview) {
         e.target === this.$refs.preTool && (this.dragBegin = e.screenX)
-        this.sizeBegin = this.$refs.preview.clientWidth
+        this.sizeBegin = this.$refs.preview.$el.clientWidth
         document.body.addEventListener('mousemove', this.moveDrag)
         document.body.addEventListener('mouseup', this.endDrag)
       }
@@ -229,7 +196,7 @@ export default {
         e.preventDefault()
         let move = e.screenX - this.dragBegin
         let moveWidth = this.sizeBegin - move
-        this.$refs.preview.style.width = moveWidth + 'px'
+        this.previewWidth = moveWidth + 'px'
       }
     },
     endDrag (e) {
@@ -347,5 +314,4 @@ export default {
 
 <style lang="less">
 @import "./styles/editor.less";
-@import "./styles/github-markdown.css";
 </style>

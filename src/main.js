@@ -1,8 +1,9 @@
 import MarkdownEditor from './components/MarkdownEditor.vue'
+import MarkdownPreview from './components/Preview'
 
 if (typeof window !== 'undefined' && window.Vue) {
   window.Vue.component('MarkdownEditor', MarkdownEditor)
-  console.log('register markdown editor')
+  window.Vue.component('MarkdownPreview', MarkdownPreview)
 }
 
-module.exports = MarkdownEditor
+module.exports = { MarkdownEditor, MarkdownPreview }
