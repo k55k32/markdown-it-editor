@@ -7,7 +7,7 @@
         i.iconfont.icon-italic(@click="doCode('*')" hotkey="ctrl+i")
         i.iconfont.icon-underline(@click="doAction('<u></u>', 3)" hotkey="ctrl+u")
         i.iconfont.icon-shanchuxian2(@click="doCode('~~')" hotkey="ctrl+d")
-        i.iconfont.icon-chain(@click="doAction('[Type Your Link Name](http://)', -1)" hotkey="ctrl+l")
+        i.iconfont.icon-chain(@click="doAction('[name]()', -1)" hotkey="ctrl+l")
         i.iconfont.icon-image(@click="uploadClick" v-if="uploadOpt.url")
           input(ref="upload", type="file", :name="uploadOpt.name" v-show="0", :accept="uploadOpt.accept" @change="fileUpload")
         i.iconfont.icon-code(@click="toCode()" hotkey="ctrl+`")
@@ -43,7 +43,7 @@ function setEditorRange (editor, start, length = 0) {
   editor.setSelectionRange(start, start + length)
   editor.focus()
 }
-import Preview from './Preview'
+import Preview from './MarkdownPreview'
 export default {
   props: ['value', 'options', 'upload', 'zIndex', 'height'],
   data () {
@@ -99,7 +99,8 @@ export default {
       }, 500)
     },
     currentIndex () {
-      this.content = this.history[this.currentIndex]
+      let history = this.history[this.currentIndex]
+      this.content = history
     }
   },
   methods: {
@@ -220,7 +221,13 @@ export default {
       this.currentIndex = this.history.length - 1
     },
     undo () {
+      let start = getEditorSelection(this.$refs.editor).start
+      let currentLength = this.content.length
       this.canUndo && this.currentIndex --
+      this.$nextTick(() => {
+        start -= currentLength - this.content.length
+        setEditorRange(this.$refs.editor, start)
+      })
     },
     redo () {
       this.canRedo && this.currentIndex ++

@@ -1,6 +1,6 @@
 <template lang="jade">
 #app
-  editor(v-model="content" height="20vh")
+  editor(v-model="content" height="100%")
 </template>
 
 <script>
@@ -18,8 +18,7 @@ export default {
 
 <style lang="css">
 #app{
-  background: #eee;
-  height: 30vh;
+  height: 80vh;
   width: 80vw;
 }
 </style>
