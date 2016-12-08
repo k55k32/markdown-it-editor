@@ -25,6 +25,11 @@ export default {
   methods: {
     renderIt () {
       this.html = this.markdownit.render(this.content)
+      this.$nextTick(() => {
+        this.$el.querySelectorAll('a').forEach((a) => {
+          a.setAttribute('target', '_blank')
+        })
+      })
     },
     initMarkdown () {
       let options = {
