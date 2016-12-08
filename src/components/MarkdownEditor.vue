@@ -1,5 +1,5 @@
 <template lang="jade">
-.markdown__editor(:class="{fullscreen:fullScreen}", :style="{zIndex: zIndex || 1, height: height || '50vh'}")
+.markdown__editor(:class="{fullscreen:fullScreen}", :style="{zIndex: zIndex || 1, height: realHeight || '50vh'}")
   .markdown__editor-wrapper
     .markdown__editor-tool(@mouseover="toolover" @mouseout="toolout")
       .action-group
@@ -69,6 +69,10 @@ export default {
   },
   components: { Preview },
   computed: {
+    realHeight () {
+      if (this.fullScreen) return '100%'
+      return this.height
+    },
     canUndo () {
       return this.currentIndex > 0
     },
@@ -105,7 +109,7 @@ export default {
         let scrollHeight = (tag.scrollHeight - tag.clientHeight) || tag.scrollHeight
         let scroll = tag.scrollTop / scrollHeight
         if (scroll > 0.7) scroll += 0.1
-        let preview = this.$refs.preview
+        let preview = this.$refs.preview.$el
         let preTop = (preview.scrollHeight - tag.clientHeight) * scroll
         preview.scrollTop = preTop
       }
