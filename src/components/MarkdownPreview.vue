@@ -23,6 +23,9 @@ export default {
     }
   },
   methods: {
+    getText () {
+      return this.$el.innerText
+    },
     renderIt () {
       this.html = this.markdownit.render(this.content)
       this.$nextTick(() => {

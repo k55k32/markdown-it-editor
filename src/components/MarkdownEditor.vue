@@ -104,6 +104,9 @@ export default {
     }
   },
   methods: {
+    getText () {
+      return this.$refs.preview.getText()
+    },
     scrollReset () {
       if (this.showPreview) {
         let tag = this.$refs.editor
