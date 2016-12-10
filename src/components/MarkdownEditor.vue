@@ -96,6 +96,7 @@ export default {
       window.clearTimeout(this.currentTimeout)
       this.currentTimeout = setTimeout(() => {
         this.saveHistory()
+        this.$emit('save-history')
       }, 500)
     },
     currentIndex () {
