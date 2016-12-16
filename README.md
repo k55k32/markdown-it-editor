@@ -21,11 +21,24 @@ use .vue template
 
 <script>
 import { MarkdownEditor } from 'markdown-it-editor'
+import hljs from 'highlightjs' // have to npm install highlight
+import 'highlightjs/styles/github.css'  
+
 export default {
   components: { MarkdownEditor },
   data () {
     return {
-      content: 'hello world'
+      content: 'hello world',
+      options: {
+        highlight (str, lang) { // you can add highlightjs plugin to highlight your code
+          if (lang && hljs.getLanguage(lang)) {
+            try {
+              return hljs.highlight(lang, str).value
+            } catch (__) {}
+          }
+          return ''
+        }
+      }
     }
   }
 }
@@ -118,11 +131,7 @@ uploading | upload on progress event | ` { loaded: number, total: number }`
     // Highlighter function. Should return escaped HTML,
     // or '' if the source string is not changed and should be escaped externaly.
     // If result starts with <pre... internal wrapper is skipped.
-    highlight: function (/*str, lang*/) { return ''; },
-
-    // custom plugin options
-    useHighlight: false, // use the default highlight plugin 'highlightjs'
-    defaultLang: 'javascript' // the default highlight's language
+    highlight: function (/*str, lang*/) { return ''; }
 }
 ```
 <a  id="attr-upload"></a>
