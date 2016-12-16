@@ -38,27 +38,10 @@ export default {
       let options = {
         html: true,
         breaks: true,
-        useHighlight: true,
-        defaultLang: 'javascript',
         ...this.options
       }
       this.markdownit = markdownIt(options)
       this.renderIt()
-      if (options.useHighlight === true) {
-        require('highlightjs/styles/github.css')
-        const hljs = require('highlightjs')
-        options.highlight = (str, lang) => {
-          lang = lang || options.defaultLang
-          if (lang && hljs.getLanguage(lang)) {
-            try {
-              return hljs.highlight(lang, str).value
-            } catch (__) {}
-          }
-          return ''
-        }
-        this.markdownit = markdownIt(options)
-        this.renderIt()
-      }
     }
   },
   created () {
