@@ -31,7 +31,7 @@ export default {
 
 <style lang="css">
 #app{
-  height: 80vh;
-  width: 80vw;
+  width: 100vw;
+  height: 100vh;
 }
 </style>

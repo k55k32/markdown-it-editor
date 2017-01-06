@@ -136,6 +136,8 @@ uploading | upload on progress event | ` { loaded: number, total: number }`
 ```
 <a  id="attr-upload"></a>
 ### upload
+> allow you paste the image to the editor
+
 ```javascript
 {
     // defualt form upload name
