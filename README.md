@@ -46,14 +46,12 @@ export default {
 
 <style lang="css">
 #app{
-  margin: auto;
-  padding-top: 20px;
-  height: 80vh;
-  width: 80vw;
+  width: 100vw;
+  height: 100vh;
 }
 </style>
 ```
-You can also use that in html. In this way you have to add vuejs by yourself [@Demo](http://md.diamondfsd.com/static/demo.html)
+You can also use that in native javascript. In this way you have to include vuejs [@Demo](http://md.diamondfsd.com/static/demo.html)
 ```html
 <!DOCTYPE html>
 <html>
