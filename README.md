@@ -146,6 +146,8 @@ uploading | upload on progress event | ` { loaded: number, total: number }`
 
     // your  file upload url
     //if url == null or other params 'false' the upload button will hidden
-    url: null // your upload url
+    url: null, // your upload url
+
+    header: {'Authorization': 'you code'}
 }
 ```

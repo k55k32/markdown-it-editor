@@ -54,7 +54,8 @@ export default {
       uploadOpt: {
         name: 'file',
         accept: 'image/jpg,image/jpeg,image/png',
-        url: 0
+        url: 0,
+        header: {}
       },
       history: [],
       currentIndex: 0,
@@ -120,6 +121,9 @@ export default {
     getText () {
       return this.$refs.preview.getText()
     },
+    getHtml () {
+      return this.$refs.preview.html
+    },
     scrollReset () {
       if (this.showPreview) {
         let tag = this.$refs.editor
@@ -179,6 +183,10 @@ export default {
       this.uploadFormData(fileData)
     },
     uploadFormData (formData) {
+      if (!this.uploadOpt.url) {
+        this.error('请先配置上传路径')
+        return false
+      }
       let xhr = new window.XMLHttpRequest()
       xhr.onload = () => {
         let success = this.$emit('upload-success', xhr.responseText)
@@ -201,6 +209,11 @@ export default {
         }
       }
       xhr.open('POST', this.uploadOpt.url, true)
+      if (this.uploadOpt.header) {
+        Object.keys(this.uploadOpt.header).forEach(k => {
+          xhr.setRequestHeader(k, this.uploadOpt.header[k])
+        })
+      }
       xhr.send(formData)
     },
     beginDrag (e) {
