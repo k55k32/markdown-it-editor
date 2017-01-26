@@ -188,17 +188,19 @@ export default {
         return false
       }
       let xhr = new window.XMLHttpRequest()
-      xhr.onload = () => {
-        let success = this.$emit('upload-success', xhr.responseText)
-        if (success !== false) {
-          this.insertTo(`\n![alt](${xhr.responseText})\n`)
-          this.info('上传成功')
-        }
-      }
-      xhr.onerror = () => {
-        let error = this.$emit('upload-error', xhr)
-        if (error !== false) {
-          this.error('上传失败')
+      xhr.onreadystatechange = () => {
+        if (xhr.readyState === 4) {
+          if (xhr.status === 200) {
+            let success = this.$emit('upload-success', xhr.responseText)
+            if (success !== false) {
+              this.insertTo(`\n![alt](${xhr.responseText})\n`)
+            }
+          } else {
+            let error = this.$emit('upload-error', xhr)
+            if (error !== false) {
+              this.error('上传失败')
+            }
+          }
         }
       }
       xhr.upload.onprogress = (e) => {
