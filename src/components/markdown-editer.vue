@@ -4,15 +4,6 @@
     .markdown__editor-tool(@mouseover="toolover" @mouseout="toolout")
       .action-group
         i(v-for="btn in buttons", :class="btn.style", @click="buttonClickHandler(btn.action)", :hotkey="btn.hotkey")
-        //- i.iconfont.icon-italic(@click="doCode('*')" hotkey="ctrl+i")
-        //- i.iconfont.icon-underline(@click="doAction('<u></u>', 3)" hotkey="ctrl+u")
-        //- i.iconfont.icon-shanchuxian2(@click="doCode('~~')" hotkey="ctrl+d")
-        //- i.iconfont.icon-chain(@click="doAction('[name]()', -1)" hotkey="ctrl+l")
-        //- i.iconfont.icon-image(@click="uploadClick" v-if="uploadOpt.url")
-        //-   input(ref="upload", type="file", :name="uploadOpt.name" v-show="0", :accept="uploadOpt.accept" @change="fileUpload")
-        //- i.iconfont.icon-code(@click="toCode()" hotkey="ctrl+`")
-        //- i.iconfont.icon-ellipsish(@click="doAction('\\n\\n---\\n\\n', 0, '')")
-        //- i.iconfont.icon-quoteleft(@click="doAction('\\n> ', -1, '')")
       .action-group
         i.iconfont.icon-mailreply(@click="undo()", :class="{disabled: !canUndo}" hotkey="ctrl+z")
         i.iconfont.icon-mailforward(@click="redo()", :class="{disabled: !canRedo}" hotkey="ctrl+y")
@@ -34,13 +25,6 @@
 <script>
 import Preview from './markdown-preview'
 import Buttons from '../plugins/default-buttons'
-
-function getEditorSelection (editor) {
-  return {
-    start: editor.selectionStart,
-    end: editor.selectionEnd
-  }
-}
 
 function setEditorRange (editor, start, length = 0) {
   editor.setSelectionRange(start, start + length)
@@ -94,6 +78,9 @@ export default {
     },
     canRedo () {
       return this.currentIndex < this.history.length - 1
+    },
+    editor () {
+      return this.$refs.editor
     }
   },
   created () {
@@ -121,6 +108,12 @@ export default {
     }
   },
   methods: {
+    getEditorSelection (editor = this.editor) {
+      return {
+        start: editor.selectionStart,
+        end: editor.selectionEnd
+      }
+    },
     buttonClickHandler (action = () => {}) {
       action(this)
     },
@@ -273,13 +266,7 @@ export default {
       this.currentIndex = this.history.length - 1
     },
     undo () {
-      let start = getEditorSelection(this.$refs.editor).start
-      let currentLength = this.content.length
       this.canUndo && this.currentIndex--
-      this.$nextTick(() => {
-        start -= currentLength - this.content.length
-        setEditorRange(this.$refs.editor, start)
-      })
     },
     redo () {
       this.canRedo && this.currentIndex++
@@ -297,7 +284,7 @@ export default {
         e.preventDefault()
         const TAB_SPACE = '  '
         let editor = this.$refs.editor
-        let {start, end} = getEditorSelection(editor)
+        let {start, end} = this.getEditorSelection(editor)
         let {before, select, after} = this.selectedStr(start, end, '')
         if (select.indexOf('\n') > -1) {
           let beforeLR = before.substr(0, before.lastIndexOf('\n') + 1)
@@ -328,7 +315,7 @@ export default {
         this.doCode('`')
       }
     },
-    insertTo (text, position = getEditorSelection(this.$refs.editor).start) {
+    insertTo (text, position = this.getEditorSelection(this.$refs.editor).start) {
       let before = this.content.substr(0, position)
       let after = this.content.substr(position)
       this.content = before + text + after
@@ -338,7 +325,7 @@ export default {
     },
     insertBetween (actionBefore, actionAfter, defaultStr) {
       let editor = this.$refs.editor
-      let {start, end} = getEditorSelection(editor)
+      let {start, end} = this.getEditorSelection(editor)
       let {before, select, after} = this.selectedStr(start, end, defaultStr)
       let newInsert = actionBefore + select + actionAfter
       this.content = before + newInsert + after
@@ -357,7 +344,7 @@ export default {
     },
     getSelectStr () {
       let editor = this.$refs.editor
-      let {start, end} = getEditorSelection(editor)
+      let {start, end} = this.getEditorSelection(editor)
       let {select} = this.selectedStr(start, end)
       return select
     },
