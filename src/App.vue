@@ -1,15 +1,18 @@
-<template lang="jade">
+<template lang="pug">
 #app
   editor(v-model="content" height="100%", :options="options")
 </template>
 
 <script>
-import editor from './components/MarkdownEditor'
+import editor from './components/markdown-editer'
 import 'highlightjs/styles/github.css'
 import hljs from 'highlightjs'
 const content = require('../README.md')
 export default {
   components: { editor },
+  created() {
+    console.log(this.content)
+  },
   data () {
     return {
       content: content,
@@ -19,7 +22,9 @@ export default {
           if (hljs.getLanguage(lang)) {
             try {
               return hljs.highlight(lang, str).value
-            } catch (__) {}
+            } catch (e) {
+              console.log(e)
+            }
           }
           return ''
         }
@@ -30,6 +35,10 @@ export default {
 </script>
 
 <style lang="css">
+body{
+  margin:0;
+  padding: 0;
+}
 #app{
   width: 100vw;
   height: 100vh;

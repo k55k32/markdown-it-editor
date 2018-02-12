@@ -1,4 +1,4 @@
-<template lang="jade">
+<template lang="pug">
 .markdown__editor(:class="{fullscreen:fullScreen}", :style="{zIndex: zIndex || 1, height: realHeight || '50vh'}")
   .markdown__editor-wrapper
     .markdown__editor-tool(@mouseover="toolover" @mouseout="toolout")
@@ -43,7 +43,7 @@ function setEditorRange (editor, start, length = 0) {
   editor.setSelectionRange(start, start + length)
   editor.focus()
 }
-import Preview from './MarkdownPreview'
+import Preview from './markdown-preview'
 export default {
   props: ['value', 'options', 'upload', 'zIndex', 'height'],
   data () {

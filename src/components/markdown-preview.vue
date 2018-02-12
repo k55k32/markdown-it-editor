@@ -1,4 +1,4 @@
-<template lang="jade">
+<template lang="pug">
 .markdown__editor-preview.markdown-body(v-html="html")
 </template>
 
