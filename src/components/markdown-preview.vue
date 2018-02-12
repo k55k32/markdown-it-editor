@@ -51,7 +51,7 @@ export default {
 </script>
 
 <style lang="css">
-@import "./styles/github-markdown.css";
+@import "../styles/github-markdown.css";
 .markdown__editor-preview{
   min-width: 20%;
   padding: 10px;

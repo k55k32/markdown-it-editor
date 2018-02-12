@@ -10,9 +10,6 @@ import hljs from 'highlightjs'
 const content = require('../README.md')
 export default {
   components: { editor },
-  created() {
-    console.log(this.content)
-  },
   data () {
     return {
       content: content,

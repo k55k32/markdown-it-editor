@@ -3,16 +3,16 @@
   .markdown__editor-wrapper
     .markdown__editor-tool(@mouseover="toolover" @mouseout="toolout")
       .action-group
-        i.iconfont.icon-bold(@click="doCode('**')" hotkey="ctrl+b")
-        i.iconfont.icon-italic(@click="doCode('*')" hotkey="ctrl+i")
-        i.iconfont.icon-underline(@click="doAction('<u></u>', 3)" hotkey="ctrl+u")
-        i.iconfont.icon-shanchuxian2(@click="doCode('~~')" hotkey="ctrl+d")
-        i.iconfont.icon-chain(@click="doAction('[name]()', -1)" hotkey="ctrl+l")
-        i.iconfont.icon-image(@click="uploadClick" v-if="uploadOpt.url")
-          input(ref="upload", type="file", :name="uploadOpt.name" v-show="0", :accept="uploadOpt.accept" @change="fileUpload")
-        i.iconfont.icon-code(@click="toCode()" hotkey="ctrl+`")
-        i.iconfont.icon-ellipsish(@click="doAction('\\n\\n---\\n\\n', 0, '')")
-        i.iconfont.icon-quoteleft(@click="doAction('\\n> ', -1, '')")
+        i(v-for="btn in buttons", :class="btn.style", @click="buttonClickHandler(btn.action)", :hotkey="btn.hotkey")
+        //- i.iconfont.icon-italic(@click="doCode('*')" hotkey="ctrl+i")
+        //- i.iconfont.icon-underline(@click="doAction('<u></u>', 3)" hotkey="ctrl+u")
+        //- i.iconfont.icon-shanchuxian2(@click="doCode('~~')" hotkey="ctrl+d")
+        //- i.iconfont.icon-chain(@click="doAction('[name]()', -1)" hotkey="ctrl+l")
+        //- i.iconfont.icon-image(@click="uploadClick" v-if="uploadOpt.url")
+        //-   input(ref="upload", type="file", :name="uploadOpt.name" v-show="0", :accept="uploadOpt.accept" @change="fileUpload")
+        //- i.iconfont.icon-code(@click="toCode()" hotkey="ctrl+`")
+        //- i.iconfont.icon-ellipsish(@click="doAction('\\n\\n---\\n\\n', 0, '')")
+        //- i.iconfont.icon-quoteleft(@click="doAction('\\n> ', -1, '')")
       .action-group
         i.iconfont.icon-mailreply(@click="undo()", :class="{disabled: !canUndo}" hotkey="ctrl+z")
         i.iconfont.icon-mailforward(@click="redo()", :class="{disabled: !canRedo}" hotkey="ctrl+y")
@@ -32,6 +32,9 @@
 </template>
 
 <script>
+import Preview from './markdown-preview'
+import Buttons from '../plugins/default-buttons'
+
 function getEditorSelection (editor) {
   return {
     start: editor.selectionStart,
@@ -43,9 +46,21 @@ function setEditorRange (editor, start, length = 0) {
   editor.setSelectionRange(start, start + length)
   editor.focus()
 }
-import Preview from './markdown-preview'
+
 export default {
-  props: ['value', 'options', 'upload', 'zIndex', 'height'],
+  props: {
+    //  ['value', 'options', 'upload', 'zIndex', 'height', 'buttons']
+    value: '',
+    options: {},
+    upload: {},
+    zIndex: 0,
+    height: '',
+    buttons: {
+      default: () => {
+        return Buttons
+      }
+    }
+  },
   data () {
     return {
       content: '',
@@ -106,6 +121,9 @@ export default {
     }
   },
   methods: {
+    buttonClickHandler (action = () => {}) {
+      action(this)
+    },
     pasteEvent (event) {
       var items = (event.clipboardData || event.originalEvent.clipboardData).items
       for (let index in items) {
@@ -257,14 +275,14 @@ export default {
     undo () {
       let start = getEditorSelection(this.$refs.editor).start
       let currentLength = this.content.length
-      this.canUndo && this.currentIndex --
+      this.canUndo && this.currentIndex--
       this.$nextTick(() => {
         start -= currentLength - this.content.length
         setEditorRange(this.$refs.editor, start)
       })
     },
     redo () {
-      this.canRedo && this.currentIndex ++
+      this.canRedo && this.currentIndex++
     },
     keydown (e) {
       let code = e.key
@@ -354,5 +372,5 @@ export default {
 </script>
 
 <style lang="less">
-@import "./styles/editor.less";
+@import "../styles/editor.less";
 </style>
