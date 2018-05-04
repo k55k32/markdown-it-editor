@@ -129,7 +129,10 @@ uploading | upload on progress event | ` { loaded: number, total: number }`
     // Highlighter function. Should return escaped HTML,
     // or '' if the source string is not changed and should be escaped externaly.
     // If result starts with <pre... internal wrapper is skipped.
-    highlight: function (/*str, lang*/) { return ''; }
+    highlight: function (/*str, lang*/) { return ''; },
+
+    // Plugins. Should be an array of the plugin functions imported even if its just one plugin.
+    plugins: [require('markdown-it-anchor'), require('markdown-it-deflist')]
 }
 ```
 <a  id="attr-upload"></a>
