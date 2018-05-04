@@ -35,14 +35,14 @@ export default {
       })
     },
     initMarkdown () {
-      let {plugin, ...otherOptions} = this.options // Separate plugin from the other options
+      let {plugins, ...otherOptions} = this.options // Separate plugins from the other options
       let options = {
         html: true,
         breaks: true,
         ...otherOptions
       }
       let mdownitOptions = markdownIt(options)
-      this.markdownit = plugin ? plugin.reduce((returned, item) => returned.use(item), mdownitOptions) : markdownIt(options) // Pass every plugin in the array to markdown-it
+      this.markdownit = plugins ? plugins.reduce((returned, item) => returned.use(item), mdownitOptions) : markdownIt(options) // Pass every plugin in the array to markdown-it
       this.renderIt()
     }
   },
