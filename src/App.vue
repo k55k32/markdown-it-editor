@@ -27,7 +27,7 @@ export default {
           }
           return ''
         },
-        plugin: [mdFontawesome, mdAnchor] // pass the plugins as an array in the options
+        plugins: [mdFontawesome, mdAnchor] // pass the plugins as an array in the options
       }
     }
   }
