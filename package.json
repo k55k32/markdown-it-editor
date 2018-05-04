@@ -13,7 +13,10 @@
     "lint": "eslint --ext .js,.vue src"
   },
   "dependencies": {
-    "markdown-it": "^8.1.0"
+    "markdown-it": "^8.1.0",
+    "markdown-it-anchor": "^4.0.0",
+    "markdown-it-fontawesome": "^0.2.0",
+    "vue": "^2.5.16"
   },
   "preeDependencies": {
     "vue": "^2.0.0"
