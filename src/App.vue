@@ -4,6 +4,10 @@
 </template>
 
 <script>
+// import plugins
+import mdFontawesome from 'markdown-it-fontawesome'
+import mdAnchor from 'markdown-it-anchor'
+
 import editor from './components/MarkdownEditor'
 import 'highlightjs/styles/github.css'
 import hljs from 'highlightjs'
@@ -22,7 +26,8 @@ export default {
             } catch (__) {}
           }
           return ''
-        }
+        },
+        plugins: [mdFontawesome, mdAnchor] // pass the plugins as an array in the options
       }
     }
   }
