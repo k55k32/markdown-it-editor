@@ -1,6 +1,6 @@
 <template lang="jade">
 #app
-  editor(v-model="content" height="100%", :options="options" plugin={plugin} )
+  editor(v-model="content" height="100%", :options="options")
 </template>
 
 <script>
